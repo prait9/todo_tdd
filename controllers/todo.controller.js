@@ -58,6 +58,29 @@ const getTodoById = async (req, res, next) => {
   }
 };
 
+const updateTodo = async (req, res, next) => {
+  try {
+    const todo = await Todo.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!todo) {
+      return res.status(404).json({
+        error: 'Todo not found',
+      });
+    }
+
+    return res.status(200).json(todo);
+  } catch (error) {
+    if (typeof next === 'function') {
+      return next(setErrorStatus(error, 500));
+    }
+
+    throw error;
+  }
+};
+
 module.exports = {
   createTodo,
   CreateTodo: createTodo,
@@ -65,4 +88,6 @@ module.exports = {
   GetTodos: getTodos,
   getTodoById,
   GetTodoById: getTodoById,
+  updateTodo,
+  UpdateTodo: updateTodo,
 };

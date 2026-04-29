@@ -163,3 +163,82 @@ describe('TodoController.getTodoById', () => {
     });
   });
 });
+
+describe('TodoController.updateTodo', () => {
+  let req;
+  let res;
+  let next;
+  let updateError;
+  let testData;
+  let updatedTodo;
+
+  beforeEach(() => {
+    testData = {
+      title: 'Write Todo controller tests better',
+      done: true,
+    };
+    updatedTodo = {
+      ...newTodo,
+      ...testData,
+    };
+    req = httpMocks.createRequest({
+      params: {
+        id: newTodo._id,
+      },
+      body: testData,
+    });
+    res = httpMocks.createResponse();
+    next = jest.fn();
+    updateError = new Error('Failed to update todo');
+
+    res.status = jest.fn().mockReturnValue(res);
+    res.json = jest.fn();
+
+    Todo.findByIdAndUpdate = jest.fn().mockResolvedValue(updatedTodo);
+  });
+
+  it('should have updateTodo function', () => {
+    expect(typeof todoController.updateTodo).toBe('function');
+  });
+
+  it('should call Todo.findByIdAndUpdate with id and request body', async () => {
+    await todoController.updateTodo(req, res, next);
+
+    expect(Todo.findByIdAndUpdate).toHaveBeenCalledWith(newTodo._id, testData, {
+      new: true,
+      runValidators: true,
+    });
+  });
+
+  it('should respond with status code 200', async () => {
+    await todoController.updateTodo(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('should respond with updated todo as json', async () => {
+    await todoController.updateTodo(req, res, next);
+
+    expect(res.json).toHaveBeenCalledWith(updatedTodo);
+  });
+
+  it('should call next with error when todo cannot be updated', async () => {
+    Todo.findByIdAndUpdate.mockRejectedValue(updateError);
+
+    await todoController.updateTodo(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(updateError);
+    expect(updateError.statusCode).toBe(500);
+  });
+
+  it('should respond with status code 404 when todo does not exist', async () => {
+    Todo.findByIdAndUpdate.mockResolvedValue(null);
+
+    await todoController.updateTodo(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({
+      error: 'Todo not found',
+    });
+  });
+});
