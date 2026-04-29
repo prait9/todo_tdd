@@ -98,3 +98,68 @@ describe('TodoController.getTodos', () => {
     expect(fetchError.statusCode).toBe(500);
   });
 });
+
+describe('TodoController.getTodoById', () => {
+  let req;
+  let res;
+  let next;
+  let fetchError;
+
+  beforeEach(() => {
+    req = httpMocks.createRequest({
+      params: {
+        id: newTodo._id,
+      },
+    });
+    res = httpMocks.createResponse();
+    next = jest.fn();
+    fetchError = new Error('Failed to fetch todo');
+
+    res.status = jest.fn().mockReturnValue(res);
+    res.json = jest.fn();
+
+    Todo.findById = jest.fn().mockResolvedValue(newTodo);
+  });
+
+  it('should have getTodoById function', () => {
+    expect(typeof todoController.getTodoById).toBe('function');
+  });
+
+  it('should call Todo.findById with request param id', async () => {
+    await todoController.getTodoById(req, res, next);
+
+    expect(Todo.findById).toHaveBeenCalledWith(newTodo._id);
+  });
+
+  it('should respond with status code 200', async () => {
+    await todoController.getTodoById(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('should respond with todo as json', async () => {
+    await todoController.getTodoById(req, res, next);
+
+    expect(res.json).toHaveBeenCalledWith(newTodo);
+  });
+
+  it('should call next with error when todo cannot be fetched', async () => {
+    Todo.findById.mockRejectedValue(fetchError);
+
+    await todoController.getTodoById(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(fetchError);
+    expect(fetchError.statusCode).toBe(500);
+  });
+
+  it('should respond with status code 404 when todo does not exist', async () => {
+    Todo.findById.mockResolvedValue(null);
+
+    await todoController.getTodoById(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({
+      error: 'Todo not found',
+    });
+  });
+});
