@@ -2,6 +2,7 @@ const httpMocks = require('node-mocks-http');
 const todoController = require('../../controllers/todo.controller');
 const Todo = require('../../models/todo.model');
 const newTodo = require('../mock-data/new-todo.json');
+const allTodos = require('../mock-data/all-todos');
 
 describe('TodoController.createTodo', () => {
   let req;
@@ -49,5 +50,51 @@ describe('TodoController.createTodo', () => {
     await todoController.createTodo(req, res, next);
 
     expect(next).toHaveBeenCalledWith(validationError);
+  });
+});
+
+describe('TodoController.getTodos', () => {
+  let req;
+  let res;
+  let next;
+  let fetchError;
+
+  beforeEach(() => {
+    req = httpMocks.createRequest();
+    res = httpMocks.createResponse();
+    next = jest.fn();
+    fetchError = new Error('Failed to fetch todos');
+
+    res.status = jest.fn().mockReturnValue(res);
+    res.json = jest.fn();
+
+    Todo.find = jest.fn().mockResolvedValue(allTodos);
+  });
+
+  it('should call Todo.find', async () => {
+    await todoController.getTodos(req, res, next);
+
+    expect(Todo.find).toHaveBeenCalled();
+  });
+
+  it('should respond with status code 200', async () => {
+    await todoController.getTodos(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+  });
+
+  it('should respond with all todos as json', async () => {
+    await todoController.getTodos(req, res, next);
+
+    expect(res.json).toHaveBeenCalledWith(allTodos);
+  });
+
+  it('should call next with error when todos cannot be fetched', async () => {
+    Todo.find.mockRejectedValue(fetchError);
+
+    await todoController.getTodos(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(fetchError);
+    expect(fetchError.statusCode).toBe(500);
   });
 });
