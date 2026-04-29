@@ -12,10 +12,12 @@
   "devDependencies": {
     "jest": "^29.7.0",
     "mongoose": "^9.6.0",
-    "node-mocks-http": "^1.17.2"
+    "node-mocks-http": "^1.17.2",
+    "supertest": "^7.2.2"
   },
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",
