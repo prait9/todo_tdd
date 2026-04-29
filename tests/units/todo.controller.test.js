@@ -7,11 +7,13 @@ describe('TodoController.createTodo', () => {
   let req;
   let res;
   let next;
+  let validationError;
 
   beforeEach(() => {
     req = httpMocks.createRequest();
     res = httpMocks.createResponse();
     next = jest.fn();
+    validationError = new Error('Todo validation failed: done: Path `done` is required.');
 
     res.status = jest.fn().mockReturnValue(res);
     res.json = jest.fn();
@@ -36,5 +38,16 @@ describe('TodoController.createTodo', () => {
     await todoController.createTodo(req, res, next);
 
     expect(res.json).toHaveBeenCalledWith(newTodo);
+  });
+
+  it('should call next with error when done is missing', async () => {
+    req.body = {
+      title: newTodo.title,
+    };
+    Todo.create.mockRejectedValue(validationError);
+
+    await todoController.createTodo(req, res, next);
+
+    expect(next).toHaveBeenCalledWith(validationError);
   });
 });

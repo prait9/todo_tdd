@@ -11,4 +11,12 @@ app.get('/', (req, res) => {
 
 app.use('/todos', todoRoutes);
 
+app.use((error, req, res, next) => {
+  const statusCode = error.statusCode || 400;
+
+  res.status(statusCode).json({
+    error: error.message,
+  });
+});
+
 module.exports = app;
