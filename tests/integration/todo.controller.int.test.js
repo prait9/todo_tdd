@@ -3,6 +3,7 @@ jest.mock('../../models/todo.model', () => ({
   find: jest.fn(),
   findById: jest.fn(),
   findByIdAndUpdate: jest.fn(),
+  findByIdAndDelete: jest.fn(),
 }));
 
 const request = require('supertest');
@@ -115,6 +116,32 @@ describe('PUT /todos/:id', () => {
     Todo.findByIdAndUpdate.mockResolvedValueOnce(null);
 
     const response = await request(app).put(`/todos/${missingTodoId}`).send(updateTestData);
+
+    expect(response.statusCode).toBe(404);
+    expect(response.body).toEqual({
+      error: 'Todo not found',
+    });
+  });
+});
+
+describe('DELETE /todos/:id', () => {
+  beforeEach(() => {
+    Todo.findByIdAndDelete.mockReset();
+    Todo.findByIdAndDelete.mockResolvedValue(firstTodo);
+  });
+
+  it('should delete one todo by id', async () => {
+    const response = await request(app).delete(`/todos/${firstTodo._id}`);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual(firstTodo);
+    expect(Todo.findByIdAndDelete).toHaveBeenCalledWith(firstTodo._id);
+  });
+
+  it('should return 404 when deleted todo does not exist', async () => {
+    Todo.findByIdAndDelete.mockResolvedValueOnce(null);
+
+    const response = await request(app).delete(`/todos/${missingTodoId}`);
 
     expect(response.statusCode).toBe(404);
     expect(response.body).toEqual({
