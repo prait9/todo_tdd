@@ -1,5 +1,31 @@
 {
   "dependencies": {
     "express": "^5.2.1"
-  }
+  },
+  "name": "todo-tdd",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "directories": {
+    "test": "tests"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "mongoose": "^9.6.0",
+    "node-mocks-http": "^1.17.2"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prait9/todo_tdd.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/prait9/todo_tdd/issues"
+  },
+  "homepage": "https://github.com/prait9/todo_tdd#readme"
 }
